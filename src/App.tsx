@@ -8,6 +8,13 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react'
+import {
+  DimensionCanvasScaffold,
+  DimensionExperiencePanel,
+  FrontPageDimensionGuide,
+  experiencePromptOffset,
+  getDimensionExperience,
+} from './dimension-experiences'
 
 type DimensionLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
 type Direction = 'out' | 'in' | 'either'
@@ -765,8 +772,7 @@ export default function App() {
     if (!activeNodeId || !activeMap.nodes.some((node) => node.id === activeNodeId)) {
       setActiveNodeId(activeMap.rootId)
     }
-    const gate = firstIncompleteLevel(activeMap)
-    if (activeLevel > gate) setActiveLevel(gate)
+    if (activeLevel !== activeMap.dimension) setActiveLevel(activeMap.dimension)
   }, [activeMap, activeLevel, activeNodeId])
 
   function updateActiveMap(transform: (map: LabMap) => LabMap) {
@@ -786,7 +792,7 @@ export default function App() {
     setActiveId(id)
     setActiveNodeId(map.rootId)
     setActiveEdgeId('')
-    setActiveLevel(firstIncompleteLevel(map))
+    setActiveLevel(map.dimension)
     setComposer(null)
   }
 
@@ -798,7 +804,7 @@ export default function App() {
     setActiveId(map.id)
     setActiveNodeId(map.rootId)
     setActiveEdgeId('')
-    setActiveLevel(1)
+    setActiveLevel(selectedDimension)
     setComposer(null)
     setSubject('')
   }
@@ -853,9 +859,7 @@ export default function App() {
     setActiveNodeId(nodeId)
     setActiveEdgeId('')
     setComposer(null)
-    if (isLevelComplete(nextMap, activeLevel) && activeLevel < activeMap.dimension) {
-      setActiveLevel(nextLevel(activeLevel))
-    }
+    // Stay inside the chosen dimensional mode after each branch.
   }
 
   function addConnection(fromId: string, toId: string, relation: string, direction: Direction) {
@@ -901,7 +905,7 @@ export default function App() {
     setActiveId(map.id)
     setActiveNodeId(map.rootId)
     setActiveEdgeId('')
-    setActiveLevel(firstIncompleteLevel(map))
+    setActiveLevel(map.dimension)
   }
 
   if (!activeMap) {
@@ -928,7 +932,7 @@ export default function App() {
   const activeEdge = activeMap.edges.find((edge) => edge.id === activeEdgeId) ?? null
 
   return (
-    <div className="laboratory" style={{ '--level-accent': levelColour(activeLevel) } as CSSProperties}>
+    <div className={`laboratory experience-d${activeLevel}`} style={{ '--level-accent': levelColour(activeLevel) } as CSSProperties}>
       <header className="lab-topbar">
         <button className="brand-button" type="button" onClick={closeMap} title="Return to maps">
           <span className="brand-mark">DU</span>
@@ -943,7 +947,7 @@ export default function App() {
             if (compactLayout) setShowInspector(false)
           }}>
             <strong>{activeMap.dimension}D</strong>
-            <span>{dimension(activeMap.dimension).name}</span>
+            <span>{getDimensionExperience(activeMap.dimension).studio}</span>
           </button>
           <div className="top-progress" aria-label={`${progress.percent}% complete`}>
             <i style={{ width: `${progress.percent}%` }} />
@@ -981,9 +985,6 @@ export default function App() {
             activeLevel={activeLevel}
             activeNode={activeNode}
             progress={progress}
-            onLevel={(level) => {
-              if (level <= firstIncompleteLevel(activeMap)) setActiveLevel(level)
-            }}
             onFocus={(field, value) => updateActiveMap((map) => ({ ...map, focus: { ...map.focus, [field]: value } }))}
             onUsePrompt={(prompt) => {
               const position = suggestedPosition(activeMap, activeNode, activeLevel, prompt.id)
@@ -1102,16 +1103,16 @@ function StartScreen(props: StartScreenProps) {
         <div className="eyebrow">Dimensional reasoning laboratory</div>
         <h1>Train the operation,<br />not the number.</h1>
         <p>
-          Begin with one state of awareness. Progress from precise definition, through systems and time, into possibility generators, observer shifts, co-evolving architectures and newly invented dimensions.
+          Choose one of twelve genuinely different laboratories. Each dimension changes the map shape, prompt logic, completion rules and mental operation rather than merely changing a number.
         </p>
       </section>
 
-      <section className="launch-card">
+      <section className="launch-card" id="start-a-map">
         <div className="launch-copy">
           <span className="section-number">01</span>
           <div>
             <h2>Choose one training dimension</h2>
-            <p>The selected level becomes the map’s ceiling. Every lower operation remains available as a foundation ladder.</p>
+            <p>The selected level becomes the entire grammar of this map. It opens directly in that dedicated laboratory; lower dimensions do not gate or homogenise the experience.</p>
           </div>
         </div>
         <div className="dimension-grid" role="radiogroup" aria-label="Training dimension">
@@ -1178,6 +1179,11 @@ function StartScreen(props: StartScreenProps) {
         </div>
       </section>
 
+      <FrontPageDimensionGuide
+        selectedLevel={props.selectedDimension}
+        onSelect={(level) => props.onDimension(level as DimensionLevel)}
+      />
+
       <section className="saved-section">
         <div className="saved-heading">
           <div>
@@ -1230,48 +1236,24 @@ interface GuidePanelProps {
   activeLevel: DimensionLevel
   activeNode: LabNode
   progress: ProgressSummary
-  onLevel: (level: DimensionLevel) => void
   onFocus: (field: FocusField, value: string) => void
   onUsePrompt: (prompt: PromptTemplate) => void
 }
 
 function GuidePanel(props: GuidePanelProps) {
   const current = dimension(props.activeLevel)
-  const gate = firstIncompleteLevel(props.map)
   const assessment = assessLevel(props.map, props.activeLevel)
   return (
     <aside className="guide-panel side-panel">
       <div className="panel-scroll">
-        <div className="panel-kicker">Training ceiling · {props.map.dimension}D</div>
-        <h2>Reasoning ladder</h2>
-        <p className="panel-intro">Complete one gateway move at every lower level, then practise the target operation repeatedly.</p>
-        <div className="ladder">
-          {DIMENSIONS.map((item) => {
-            const aboveCeiling = item.level > props.map.dimension
-            const awaitingFoundation = item.level > gate
-            const locked = aboveCeiling || awaitingFoundation
-            const levelAssessment = assessLevel(props.map, item.level)
-            const count = levelAssessment.completed
-            const required = levelAssessment.required
-            const complete = !aboveCeiling && levelAssessment.complete
-            return (
-              <button
-                key={item.level}
-                type="button"
-                disabled={locked}
-                className={`${props.activeLevel === item.level ? 'active' : ''} ${complete ? 'complete' : ''}`}
-                onClick={() => props.onLevel(item.level)}
-              >
-                <span className="ladder-level">{item.level}D</span>
-                <span><b>{item.name}</b><small>{item.verb}</small></span>
-                <em>{aboveCeiling ? 'Ceiling' : awaitingFoundation ? 'Foundation first' : `${Math.min(count, required)}/${required}`}</em>
-              </button>
-            )
-          })}
-        </div>
+        <div className="panel-kicker">Selected training mode · {props.map.dimension}D</div>
+        <h2>{current.name} laboratory</h2>
+        <p className="panel-intro">This map trains one distinct operation directly. It is not a shared lower-level course wearing a different dimension label.</p>
+
+        <DimensionExperiencePanel level={props.activeLevel} subject={props.map.subject} />
 
         <section className="current-operation" style={{ '--card-accent': levelColour(current.level) } as CSSProperties}>
-          <span className="eyebrow">Current operation · {current.level}D</span>
+          <span className="eyebrow">Live completion test · {current.level}D</span>
           <h3>{current.verb}: {current.name}</h3>
           <p>{current.short}</p>
           <blockquote>{current.coreQuestion}</blockquote>
@@ -1291,26 +1273,26 @@ function GuidePanel(props: GuidePanelProps) {
           <div className="prompt-deck">
             <div className="deck-heading">
               <div><small>Active thought</small><strong>{props.activeNode.label}</strong></div>
-              <span>Choose a logical line</span>
+              <span>{current.verb} move</span>
             </div>
             {current.prompts.map((prompt) => {
               const used = props.map.edges.some((edge) => edge.layer === current.level && edge.promptId === prompt.id)
               return (
-              <button key={prompt.id} type="button" className={used ? 'used' : ''} onClick={() => props.onUsePrompt(prompt)}>
-                <span>{prompt.title}{used ? ' · practised' : ''}</span>
-                <strong>{prompt.question}</strong>
-                <small>{prompt.relation}</small>
-              </button>
+                <button key={prompt.id} type="button" className={used ? 'used' : ''} onClick={() => props.onUsePrompt(prompt)}>
+                  <span>{prompt.title}{used ? ' · practised' : ''}</span>
+                  <strong>{prompt.question}</strong>
+                  <small>{prompt.relation}</small>
+                </button>
               )
             })}
           </div>
         )}
 
         <section className="progress-card">
-          <div><span>Dimensional fidelity</span><strong>{props.progress.percent}%</strong></div>
+          <div><span>{props.map.dimension}D structural fidelity</span><strong>{props.progress.percent}%</strong></div>
           <div className="progress-track"><i style={{ width: `${props.progress.percent}%` }} /></div>
-          <p>{props.progress.completedLevels} of {props.map.dimension} levels have met their current requirement.</p>
-          {props.progress.percent === 100 ? <b>Target grammar completed. Continue mapping for depth, cross-links and contradiction testing.</b> : null}
+          <p>{assessment.completed} of {assessment.required} requirements for this selected laboratory are currently visible in the map.</p>
+          {props.progress.percent === 100 ? <b>Selected grammar completed. Continue for depth, contradiction testing and transfer.</b> : null}
         </section>
       </div>
     </aside>
@@ -1364,6 +1346,7 @@ function MapCanvas(props: MapCanvasProps) {
   const [promptOffset, setPromptOffset] = useState(0)
   const activeNode = props.map.nodes.find((node) => node.id === props.activeNodeId) ?? props.map.nodes[0]
   const current = dimension(props.activeLevel)
+  const experience = getDimensionExperience(props.activeLevel)
   const prompts = rotatePrompts(current.prompts, promptOffset).slice(0, 4)
   const nodeById = useMemo(() => new Map(props.map.nodes.map((node) => [node.id, node])), [props.map.nodes])
 
@@ -1522,18 +1505,21 @@ function MapCanvas(props: MapCanvasProps) {
     window.addEventListener('pointercancel', finish)
   }
 
-  const ghostPoints = prompts.map((prompt, index) => ({ prompt, ...ghostPosition(activeNode, index, prompts.length, props.activeLevel) }))
+  const ghostPoints = prompts.map((prompt, index) => ({
+    prompt,
+    ...ghostPosition(activeNode, prompt.id, index, prompts.length, props.activeLevel),
+  }))
 
   return (
-    <section className="canvas-column">
+    <section className={`canvas-column experience-canvas-d${props.activeLevel}`}>
       <div className="canvas-status">
-        <span><b>{props.activeLevel}D</b> {current.name}</span>
+        <span><b>{props.activeLevel}D</b> {experience.studio}</span>
         <strong>{current.coreQuestion}</strong>
         <span>{props.map.nodes.length} nodes · {props.map.edges.length} lines</span>
       </div>
       <div
         ref={viewportRef}
-        className="map-viewport"
+        className={`map-viewport experience-viewport-d${props.activeLevel}`}
         onPointerDown={beginCanvasGesture}
         onPointerMove={moveCanvasGesture}
         onPointerUp={endCanvasGesture}
@@ -1546,8 +1532,8 @@ function MapCanvas(props: MapCanvasProps) {
             width: WORLD_WIDTH,
             height: WORLD_HEIGHT,
             left: '50%',
-  top: '50%',
-  transform: `translate(${view.panX}px, ${view.panY}px) scale(${view.scale}) translate(${-WORLD_CENTRE.x}px, ${-WORLD_CENTRE.y}px)`,
+            top: '50%',
+            transform: `translate(${view.panX}px, ${view.panY}px) scale(${view.scale}) translate(${-WORLD_CENTRE.x}px, ${-WORLD_CENTRE.y}px)`,
           }}
         >
           <svg className="edge-layer" width={WORLD_WIDTH} height={WORLD_HEIGHT} viewBox={`0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`} aria-hidden="true">
@@ -1556,6 +1542,7 @@ function MapCanvas(props: MapCanvasProps) {
                 <path d="M 0 0 L 10 5 L 0 10 z" />
               </marker>
             </defs>
+            <DimensionCanvasScaffold level={props.activeLevel} x={activeNode.x} y={activeNode.y} />
             {props.map.edges.map((edge) => {
               const from = nodeById.get(edge.from)
               const to = nodeById.get(edge.to)
@@ -1639,14 +1626,20 @@ interface InspectorPanelProps {
 }
 
 function InspectorPanel(props: InspectorPanelProps) {
+  const activeDimension = dimension(props.activeLevel)
+  const activeExperience = getDimensionExperience(props.activeLevel)
   const [targetId, setTargetId] = useState('')
-  const [relation, setRelation] = useState('influences')
+  const [relation, setRelation] = useState(activeDimension.prompts[0]?.relation ?? 'relates to')
   const [direction, setDirection] = useState<Direction>('out')
 
   useEffect(() => {
     const first = props.map.nodes.find((node) => node.id !== props.node.id)
     setTargetId(first?.id ?? '')
   }, [props.map.nodes, props.node.id])
+
+  useEffect(() => {
+    setRelation(activeDimension.prompts[0]?.relation ?? 'relates to')
+  }, [activeDimension.prompts, props.activeLevel])
 
   if (props.edge) {
     const from = props.map.nodes.find((node) => node.id === props.edge?.from)
@@ -1669,10 +1662,8 @@ function InspectorPanel(props: InspectorPanelProps) {
             </select>
           </label>
           <label className="field-label">
-            <span>Reasoning layer</span>
-            <select value={props.edge.layer} onChange={(event) => props.onUpdateEdge({ layer: toDimension(Number(event.target.value)) })}>
-              {DIMENSIONS.slice(0, props.map.dimension).map((item) => <option key={item.level} value={item.level}>{item.level}D · {item.name}</option>)}
-            </select>
+            <span>Dedicated reasoning mode</span>
+            <input value={`${props.map.dimension}D · ${activeExperience.studio}`} readOnly />
           </label>
           <label className="field-label">
             <span>Why this line is valid</span>
@@ -1719,13 +1710,13 @@ function InspectorPanel(props: InspectorPanelProps) {
         </label>
 
         <section className="crosslink-builder">
-          <div><span className="eyebrow">System-building move</span><h3>Connect existing nodes</h3></div>
+          <div><span className="eyebrow">{activeDimension.verb} move · {activeExperience.studio}</span><h3>Connect existing nodes</h3></div>
           {connectable.length ? (
             <>
               <select value={targetId} onChange={(event) => setTargetId(event.target.value)}>
                 {connectable.map((node) => <option key={node.id} value={node.id}>{node.label}</option>)}
               </select>
-              <input value={relation} onChange={(event) => setRelation(event.target.value)} placeholder="relationship line" />
+              <input value={relation} onChange={(event) => setRelation(event.target.value)} placeholder={`${activeDimension.verb.toLowerCase()} relationship`} />
               <select value={direction} onChange={(event) => setDirection(event.target.value as Direction)}>
                 <option value="out">Selected → target</option>
                 <option value="in">Target → selected</option>
@@ -1761,6 +1752,8 @@ function BranchComposer({
   const optionsId = `existing-nodes-${composer.key}`
   const reconnectable = existingNodes.filter((node) => node.id !== composer.fromId)
   const feedbackPrompt = composer.prompt.id === 'd4-feedback'
+  const promptLevel = toDimension(Number(composer.prompt.id.match(/^d(\d+)/)?.[1] ?? 2))
+  const promptExperience = getDimensionExperience(promptLevel)
   return (
     <div className="composer-backdrop" onPointerDown={(event) => {
       if (event.target === event.currentTarget) onCancel()
@@ -1770,14 +1763,15 @@ function BranchComposer({
         onSubmit({ name, relation, context })
       }}>
         <button type="button" className="composer-close" onClick={onCancel} aria-label="Close">×</button>
-        <span className="eyebrow">Logical branch · {composer.prompt.title}</span>
+        <span className="eyebrow">{promptLevel}D · {promptExperience.studio} · {composer.prompt.title}</span>
         <h2>{composer.prompt.question}</h2>
+        <p className="composer-mode-explanation">{promptExperience.mentalMove}</p>
         <p className="composer-example"><b>Example:</b> {composer.prompt.example}</p>
         {feedbackPrompt ? (
           <p className="composer-guidance"><b>Feedback rule:</b> reconnect to an existing node so the returning consequence closes a real loop rather than merely extending a timeline.</p>
         ) : null}
         <label>
-          <span>Node: the thing, state or category</span>
+          <span>Node: the {titleCase(composer.prompt.kind)} this move requires</span>
           <input
             autoFocus
             list={reconnectable.length ? optionsId : undefined}
@@ -1793,7 +1787,7 @@ function BranchComposer({
           <small className="composer-field-help">Typing an existing node name reconnects the line instead of creating a duplicate node.</small>
         </label>
         <label>
-          <span>Line: the exact relationship</span>
+          <span>Line: the exact {composer.prompt.title.toLowerCase()} relationship</span>
           <input value={relation} onChange={(event) => setRelation(event.target.value)} />
         </label>
         <label>
@@ -1828,16 +1822,11 @@ interface LevelAssessment {
 }
 
 function calculateProgress(map: LabMap): ProgressSummary {
-  let achieved = 0
-  let possible = 0
-  let completedLevels = 0
-  for (let raw = 1; raw <= map.dimension; raw += 1) {
-    const assessment = assessLevel(map, toDimension(raw))
-    achieved += assessment.completed
-    possible += assessment.required
-    if (assessment.complete) completedLevels += 1
+  const assessment = assessLevel(map, map.dimension)
+  return {
+    percent: assessment.required ? Math.round((assessment.completed / assessment.required) * 100) : 0,
+    completedLevels: assessment.complete ? 1 : 0,
   }
-  return { percent: possible ? Math.round((achieved / possible) * 100) : 0, completedLevels }
 }
 
 function assessLevel(map: LabMap, level: DimensionLevel): LevelAssessment {
@@ -1939,24 +1928,8 @@ function levelCriteria(map: LabMap, level: DimensionLevel): LevelCriterion[] {
   return criteriaByLevel[level] ?? [{ id: 'valid', label: 'Create a valid reasoning move', complete: edges.length >= 1 }]
 }
 
-function isLevelComplete(map: LabMap, level: DimensionLevel): boolean {
-  return assessLevel(map, level).complete
-}
-
-function firstIncompleteLevel(map: LabMap): DimensionLevel {
-  for (let raw = 1; raw <= map.dimension; raw += 1) {
-    const level = toDimension(raw)
-    if (!isLevelComplete(map, level)) return level
-  }
-  return map.dimension
-}
-
 function dimension(level: DimensionLevel): DimensionDefinition {
   return DIMENSIONS[level - 1]
-}
-
-function nextLevel(level: DimensionLevel): DimensionLevel {
-  return toDimension(Math.min(12, level + 1))
 }
 
 function toDimension(value: number): DimensionLevel {
@@ -1980,8 +1953,8 @@ function makeMap(subject: string, dimensionLevel: DimensionLevel): LabMap {
         kind: 'focus',
         x: WORLD_CENTRE.x,
         y: WORLD_CENTRE.y,
-        layer: 1,
-        context: 'Focal phenomenon',
+        layer: dimensionLevel,
+        context: `Focal phenomenon · ${dimensionLevel}D mode`,
         notes: '',
         confidence: 50,
         createdAt: now,
@@ -2036,7 +2009,12 @@ function normaliseImportedMap(value: unknown): LabMap | null {
   })
   const rootId = String(candidate.rootId)
   if (!nodes.some((node) => node.id === rootId)) return null
-  const nodeIds = new Set(nodes.map((node) => node.id))
+  const modeNodes = nodes.map((node) =>
+    node.id === rootId
+      ? { ...node, layer: dimensionLevel, context: node.context || `Focal phenomenon · ${dimensionLevel}D mode` }
+      : node,
+  )
+  const nodeIds = new Set(modeNodes.map((node) => node.id))
   const seenEdgeIds = new Set<string>()
   const edges = dimensionLevel === 1 ? [] : candidate.edges.flatMap((raw) => {
     if (!raw || typeof raw !== 'object') return []
@@ -2059,7 +2037,7 @@ function normaliseImportedMap(value: unknown): LabMap | null {
       notes: typeof source.notes === 'string' ? source.notes : '',
     } satisfies LabEdge]
   })
-  const title = typeof candidate.title === 'string' && candidate.title.trim() ? candidate.title.trim() : nodes.find((node) => node.id === rootId)?.label ?? 'Imported map'
+  const title = typeof candidate.title === 'string' && candidate.title.trim() ? candidate.title.trim() : modeNodes.find((node) => node.id === rootId)?.label ?? 'Imported map'
   return {
     schemaVersion: 1,
     id: typeof candidate.id === 'string' && candidate.id ? candidate.id : makeId('map'),
@@ -2067,7 +2045,7 @@ function normaliseImportedMap(value: unknown): LabMap | null {
     subject: typeof candidate.subject === 'string' && candidate.subject.trim() ? candidate.subject.trim() : title,
     dimension: dimensionLevel,
     rootId,
-    nodes,
+    nodes: modeNodes,
     edges,
     focus: {
       definition: typeof candidate.focus?.definition === 'string' ? candidate.focus.definition : '',
@@ -2101,22 +2079,28 @@ function edgeClosesCycle(map: LabMap, candidate: LabEdge): boolean {
 }
 
 function suggestedPosition(map: LabMap, activeNode: LabNode, level: DimensionLevel, seed: string) {
-  const siblings = map.edges.filter((edge) => edge.from === activeNode.id || edge.to === activeNode.id).length
-  const angle = hashNumber(`${seed}-${siblings}`) * Math.PI * 2
-  const radius = 245 + Math.min(level, 8) * 12
+  const siblingCount = map.edges.filter((edge) => edge.from === activeNode.id || edge.to === activeNode.id).length
+  const promptCount = Math.max(1, dimension(level).prompts.length)
+  const offset = experiencePromptOffset(level, seed, siblingCount % promptCount, promptCount)
+  const ring = 1 + Math.floor(siblingCount / promptCount) * 0.18
+  const jitter = (hashNumber(`${seed}-${siblingCount}`) - 0.5) * 34
   return {
-    x: clamp(activeNode.x + Math.cos(angle) * radius, 130, WORLD_WIDTH - 130),
-    y: clamp(activeNode.y + Math.sin(angle) * radius, 100, WORLD_HEIGHT - 100),
+    x: clamp(activeNode.x + offset.dx * ring + jitter, 130, WORLD_WIDTH - 130),
+    y: clamp(activeNode.y + offset.dy * ring - jitter * 0.35, 100, WORLD_HEIGHT - 100),
   }
 }
 
-function ghostPosition(node: LabNode, index: number, total: number, level: DimensionLevel) {
-  const sweep = total === 1 ? 0 : Math.PI * 1.45
-  const angle = -Math.PI * 0.75 + (total === 1 ? 0 : (index / (total - 1)) * sweep) + level * 0.13
-  const radius = 260 + Math.min(level, 9) * 10
+function ghostPosition(
+  node: LabNode,
+  promptId: string,
+  index: number,
+  total: number,
+  level: DimensionLevel,
+) {
+  const offset = experiencePromptOffset(level, promptId, index, total)
   return {
-    x: clamp(node.x + Math.cos(angle) * radius, 150, WORLD_WIDTH - 150),
-    y: clamp(node.y + Math.sin(angle) * radius, 120, WORLD_HEIGHT - 120),
+    x: clamp(node.x + offset.dx, 150, WORLD_WIDTH - 150),
+    y: clamp(node.y + offset.dy, 120, WORLD_HEIGHT - 120),
   }
 }
 

@@ -70,7 +70,9 @@ The learner creates a new representational axis, identifies what it reveals, ide
 
 ## Training logic
 
-A selected dimension is a ceiling, not permission to skip foundations. Lower levels use gateway requirements; the target level requires repeated demonstrations. The completion score measures structural fidelity to the chosen grammar, not intelligence.
+A selected dimension is a dedicated mode, not a ceiling. The learner enters that dimensional operation directly. Each mode has its own coaching sequence, spatial scaffold, ghost-branch placement, semantic line grammar, common-failure warning and completion rubric. A 6D map therefore trains generative-rule reasoning immediately rather than forcing the learner through an identical lower-level interface. The completion score measures structural fidelity to the chosen grammar, not intelligence.
+
+The front-page field guide teaches every mode before launch through a worked personal-development example, required map shape, step sequence, failure case and pass test.
 
 ## Evaluation direction
 

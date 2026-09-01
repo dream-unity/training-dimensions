@@ -11,12 +11,13 @@ This repository was first copied from `dream-unity/theory` as an exact baseline 
 - **Nodes are things, states, concepts, observers, rules or systems.**
 - **Lines are explicit semantic relationships.**
 - **Ghost branches are temporary training instructions.** They become finished semantic relationships after the learner answers them.
-- Every new map begins with exactly one chosen training ceiling from **1D through 12D**.
-- The laboratory gates higher operations until lower-dimensional foundations are represented.
+- Every new map begins with exactly one chosen **dedicated training mode** from **1D through 12D**.
+- The chosen dimension opens directly. It changes the canvas scaffold, ghost-branch geometry, coaching sequence, relationship language and completion rubric.
+- A full interactive guide on the front page teaches how to construct every dimension before the learner starts.
 - Completion is rubric-based rather than a raw node count. For example, 4D requires a genuine closed feedback loop, while 5D requires multiple futures from one branch point.
 - Maps autosave to browser storage and can be exported or imported as validated JSON.
 
-## The reasoning ladder
+## The twelve distinct laboratories
 
 | Level | Operation | Training demand |
 |---|---|---|
@@ -37,11 +38,11 @@ This repository was first copied from `dream-unity/theory` as an exact baseline 
 
 1. Choose one target dimension on the start screen.
 2. Name one state, problem or phenomenon.
-3. Stabilise the subject in 1D.
-4. Select a ghost prompt to expose the next required reasoning move.
-5. Name the real concept or state in the node, then state the exact relationship on the line.
-6. Reconnect to existing nodes to create systems, feedback loops and convergent structures.
-7. Use the live criteria checklist to distinguish genuine structural completion from decorative complexity.
+3. Enter the selected laboratory directly; a 6D map begins in the Rule Foundry, not in a generic 1D sequence.
+4. Follow the dimension-specific map shape and coaching steps.
+5. Select a ghost prompt, name the real concept or state, then state the exact relationship on the line.
+6. Reconnect existing nodes where that dimension requires systems, loops, convergence, translation or co-adaptation.
+7. Use the selected laboratory’s own completion rubric to distinguish genuine structure from decorative complexity.
 
 The canvas supports mouse, touch and precision trackpads: drag nodes, pan empty space, zoom with wheel/trackpad or two-finger pinch, and inspect or revise every semantic line.
 
