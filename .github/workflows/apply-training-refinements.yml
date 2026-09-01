@@ -1,0 +1,51 @@
+name: Apply rigorous dimensional-training refinements
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-training-refinements.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out training-dimensions
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify and install refinement payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .refinement-payload/part-* > /tmp/training-refinement-payload.b64
+          echo 'd9a8e518abdddbfe474de76a953d88a1d3c7bdd952d4a33f54aab4c2994bb166  /tmp/training-refinement-payload.b64' | sha256sum --check -
+          base64 --decode /tmp/training-refinement-payload.b64 > /tmp/training-refinement-payload.tar.gz
+          echo 'e31eb590bb4412cfe08350cc97a2eab1315c8ca38c821ccf45113f6d99650923  /tmp/training-refinement-payload.tar.gz' | sha256sum --check -
+          tar -xzf /tmp/training-refinement-payload.tar.gz ./src/App.tsx ./src/styles.css ./README.md
+          rm -rf .refinement-payload
+          git diff --check
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test and prepare branch-ready build
+        run: |
+          npm test
+          npm run pages:prepare
+
+      - name: Commit verified refinements
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'Harden dimensional training, rubrics, gestures and feedback loops'
+          git push origin HEAD:main
