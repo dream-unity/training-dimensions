@@ -23,7 +23,30 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .refinement-payload/part-* > /tmp/training-refinement-payload.b64
+          cat \
+            .refinement-payload/part-00 \
+            .refinement-payload/part-01 \
+            .refinement-payload/part-02 \
+            .refinement-payload/part-03 \
+            .refinement-payload/part-04-00 \
+            .refinement-payload/part-04-01 \
+            .refinement-payload/part-04-02 \
+            .refinement-payload/part-04-03-00 \
+            .refinement-payload/part-04-03-01 \
+            .refinement-payload/part-04-03-02 \
+            .refinement-payload/part-04-03-03 \
+            .refinement-payload/part-04-03-04 \
+            .refinement-payload/part-04-03-05 \
+            .refinement-payload/part-04-04 \
+            .refinement-payload/part-04-05 \
+            .refinement-payload/part-04-06 \
+            .refinement-payload/part-04-07 \
+            .refinement-payload/part-05 \
+            .refinement-payload/part-06 \
+            .refinement-payload/part-07 \
+            .refinement-payload/part-08 \
+            .refinement-payload/part-09 \
+            > /tmp/training-refinement-payload.b64
           echo 'd9a8e518abdddbfe474de76a953d88a1d3c7bdd952d4a33f54aab4c2994bb166  /tmp/training-refinement-payload.b64' | sha256sum --check -
           base64 --decode /tmp/training-refinement-payload.b64 > /tmp/training-refinement-payload.tar.gz
           echo 'e31eb590bb4412cfe08350cc97a2eab1315c8ca38c821ccf45113f6d99650923  /tmp/training-refinement-payload.tar.gz' | sha256sum --check -
