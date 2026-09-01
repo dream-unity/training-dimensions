@@ -63,20 +63,44 @@ jobs:
             exit 1
           fi
 
+          set +e
           "$browser" \
             --headless=new \
             --no-sandbox \
             --disable-dev-shm-usage \
             --disable-gpu \
-            --virtual-time-budget=4000 \
+            --disable-background-networking \
+            --disable-extensions \
+            --no-first-run \
+            --window-size=1440,1200 \
+            --virtual-time-budget=6000 \
             --dump-dom \
             http://127.0.0.1:4173/training-dimensions/ \
-            > /tmp/training-dimensions-dom.html
+            > /tmp/training-dimensions-dom.html \
+            2> /tmp/training-dimensions-chrome.log
+          browser_status=$?
+          set -e
+          echo "Headless browser exit status: ${browser_status}"
 
-          grep --quiet 'Choose one training dimension' /tmp/training-dimensions-dom.html
-          grep --quiet 'Enter 4D laboratory' /tmp/training-dimensions-dom.html
-          grep --quiet '1D' /tmp/training-dimensions-dom.html
-          grep --quiet '12D' /tmp/training-dimensions-dom.html
+          if [[ ! -s /tmp/training-dimensions-dom.html ]]; then
+            cat /tmp/training-dimensions-preview.log
+            cat /tmp/training-dimensions-chrome.log
+            exit 1
+          fi
+
+          for expected in \
+            'Choose one training dimension' \
+            'Enter 4D laboratory' \
+            '>1D<' \
+            '>12D<'
+          do
+            if ! grep --fixed-strings --quiet "$expected" /tmp/training-dimensions-dom.html; then
+              echo "Rendered DOM is missing: ${expected}" >&2
+              cat /tmp/training-dimensions-chrome.log
+              sed -n '1,180p' /tmp/training-dimensions-dom.html
+              exit 1
+            fi
+          done
       - name: Detect whether GitHub Pages is enabled
         id: pages
         shell: bash
