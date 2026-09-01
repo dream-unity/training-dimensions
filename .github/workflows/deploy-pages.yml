@@ -36,6 +36,47 @@ jobs:
         run: npm test
       - name: Build dimensional reasoning laboratory
         run: npm run build
+      - name: Browser smoke-test the built laboratory
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/training-dimensions-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4173/training-dimensions/ > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [[ "$ready" != "true" ]]; then
+            cat /tmp/training-dimensions-preview.log
+            exit 1
+          fi
+
+          browser="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [[ -z "$browser" ]]; then
+            echo 'No headless Chromium browser was found on the runner.' >&2
+            exit 1
+          fi
+
+          "$browser" \
+            --headless=new \
+            --no-sandbox \
+            --disable-dev-shm-usage \
+            --disable-gpu \
+            --virtual-time-budget=4000 \
+            --dump-dom \
+            http://127.0.0.1:4173/training-dimensions/ \
+            > /tmp/training-dimensions-dom.html
+
+          grep --quiet 'Choose one training dimension' /tmp/training-dimensions-dom.html
+          grep --quiet 'Enter 4D laboratory' /tmp/training-dimensions-dom.html
+          grep --quiet '1D' /tmp/training-dimensions-dom.html
+          grep --quiet '12D' /tmp/training-dimensions-dom.html
       - name: Detect whether GitHub Pages is enabled
         id: pages
         shell: bash
@@ -78,3 +119,33 @@ jobs:
       - name: Deploy dimensional reasoning laboratory
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify the public deployment
+        shell: bash
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          verified=false
+          for attempt in {1..24}; do
+            status="$(curl --silent --show-error --location \
+              --output /tmp/training-dimensions-live.html \
+              --write-out '%{http_code}' \
+              "${SITE_URL}?verify=${GITHUB_SHA}")"
+            if [[ "$status" == "200" ]] && grep --quiet 'Training Dimensions — Dream Unity' /tmp/training-dimensions-live.html; then
+              verified=true
+              break
+            fi
+            sleep 5
+          done
+          if [[ "$verified" != "true" ]]; then
+            echo "Public deployment did not become verifiable at ${SITE_URL}." >&2
+            exit 1
+          fi
+          curl --fail --silent --show-error --location \
+            "${SITE_URL%/}/assets/app.js?verify=${GITHUB_SHA}" \
+            --output /tmp/training-dimensions-live.js
+          curl --fail --silent --show-error --location \
+            "${SITE_URL%/}/assets/app.css?verify=${GITHUB_SHA}" \
+            --output /tmp/training-dimensions-live.css
+          test -s /tmp/training-dimensions-live.js
+          test -s /tmp/training-dimensions-live.css
