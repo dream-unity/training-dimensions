@@ -67,8 +67,10 @@ jobs:
           "$browser" \
             --headless=new \
             --no-sandbox \
+            --disable-setuid-sandbox \
             --disable-dev-shm-usage \
             --disable-gpu \
+            --disable-software-rasterizer \
             --disable-background-networking \
             --disable-extensions \
             --no-first-run \
@@ -88,16 +90,21 @@ jobs:
             exit 1
           fi
 
+          sed -E 's/<[^>]+>/ /g' /tmp/training-dimensions-dom.html \
+            | tr '\n' ' ' \
+            | tr -s '[:space:]' ' ' \
+            > /tmp/training-dimensions-rendered-text.txt
+
           for expected in \
             'Choose one training dimension' \
             'Enter 4D laboratory' \
-            '>1D<' \
-            '>12D<'
+            'Dimension Invention' \
+            'Persistent local laboratory'
           do
-            if ! grep --fixed-strings --quiet "$expected" /tmp/training-dimensions-dom.html; then
-              echo "Rendered DOM is missing: ${expected}" >&2
+            if ! grep --fixed-strings --quiet "$expected" /tmp/training-dimensions-rendered-text.txt; then
+              echo "Rendered application is missing: ${expected}" >&2
               cat /tmp/training-dimensions-chrome.log
-              sed -n '1,180p' /tmp/training-dimensions-dom.html
+              head -c 12000 /tmp/training-dimensions-rendered-text.txt
               exit 1
             fi
           done
