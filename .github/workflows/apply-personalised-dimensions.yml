@@ -1,0 +1,106 @@
+name: Apply personalised dimensional laboratories
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-personalised-dimensions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out training-dimensions
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Reconstruct and install the personalised source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat patches/personalised-dimensions-*.b64 > /tmp/personalised-dimensions.b64
+          echo 'a87f9d2ca3877cc08cd2ba06f7ca252c03cd4d30daed6090bb8db9d2b1474bc6  /tmp/personalised-dimensions.b64' | sha256sum --check
+          base64 --decode /tmp/personalised-dimensions.b64 > /tmp/personalised-dimensions.tar.gz
+          echo '7045e6dca06d8831b510707a40c2c80d71f8b2c9777c3190ceb9c282e593241a  /tmp/personalised-dimensions.tar.gz' | sha256sum --check
+          tar -xzf /tmp/personalised-dimensions.tar.gz
+          test -s src/dimension-experiences.tsx
+          test -s src/dimension-experiences.css
+
+      - name: Verify twelve genuinely distinct training modes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(grep -c "^[[:space:]]*studio:" src/dimension-experiences.tsx)" -eq 12
+          for studio in \
+            'Focus Chamber' \
+            'Relation Bridge' \
+            'System Weave' \
+            'Time-Loop Laboratory' \
+            'Future-Fork Simulator' \
+            'Rule Foundry' \
+            'Framework Translator' \
+            'Observer Orbit' \
+            'Model-Evolution Lab' \
+            'Architecture Studio' \
+            'Co-evolution Arena' \
+            'Axis Forge'
+          do
+            grep --fixed-strings --quiet "$studio" src/dimension-experiences.tsx
+          done
+          grep --fixed-strings --quiet 'FrontPageDimensionGuide' src/App.tsx
+          grep --fixed-strings --quiet 'DimensionCanvasScaffold' src/App.tsx
+          grep --fixed-strings --quiet 'The selected dimension is the entire grammar of this map.' src/App.tsx
+          grep --fixed-strings --quiet 'Every laboratory opens directly in its chosen mode' README.md
+          if grep --fixed-strings --quiet 'The selected level becomes the map’s ceiling' src/App.tsx; then
+            echo 'Old shared-ceiling training model is still present.' >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test inherited mind-mapping engine
+        run: npm test
+
+      - name: Build and synchronise production assets
+        run: npm run pages:prepare
+
+      - name: Verify production output
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep --fixed-strings --quiet 'Training Dimensions — Dream Unity' index.html
+          grep --fixed-strings --quiet 'How to map every dimension' assets/app.js
+          grep --fixed-strings --quiet 'Rule Foundry' assets/app.js
+          grep --fixed-strings --quiet 'Axis Forge' assets/app.js
+          grep --fixed-strings --quiet 'experience-viewport-d12' assets/app.css
+          git diff --check
+
+      - name: Commit the rebuilt dimensional training laboratory
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf patches
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A README.md docs src index.html assets .nojekyll patches
+          if git diff --cached --quiet; then
+            echo 'No source changes were required.'
+            exit 0
+          fi
+          git commit -m 'Personalise every 1D–12D laboratory and add front-page guide'
+          git push origin HEAD:main
