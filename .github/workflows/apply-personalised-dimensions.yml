@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(grep -c "^[[:space:]]*studio:" src/dimension-experiences.tsx)" -eq 12
+          test "$(grep -Ec "^[[:space:]]{4}studio:" src/dimension-experiences.tsx)" -eq 12
           for studio in \
             'Focus Chamber' \
             'Relation Bridge' \
@@ -63,8 +63,8 @@ jobs:
           done
           grep --fixed-strings --quiet 'FrontPageDimensionGuide' src/App.tsx
           grep --fixed-strings --quiet 'DimensionCanvasScaffold' src/App.tsx
-          grep --fixed-strings --quiet 'The selected dimension is the entire grammar of this map.' src/App.tsx
-          grep --fixed-strings --quiet 'Every laboratory opens directly in its chosen mode' README.md
+          grep --fixed-strings --quiet 'The selected level becomes the entire grammar of this map.' src/App.tsx
+          grep --fixed-strings --quiet 'The chosen dimension opens directly.' README.md
           if grep --fixed-strings --quiet 'The selected level becomes the map’s ceiling' src/App.tsx; then
             echo 'Old shared-ceiling training model is still present.' >&2
             exit 1
@@ -97,7 +97,7 @@ jobs:
           rm -rf patches
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A README.md docs src index.html assets .nojekyll patches
+          git add -A
           if git diff --cached --quiet; then
             echo 'No source changes were required.'
             exit 0
