@@ -2,6 +2,8 @@
 
 A guided mind-mapping laboratory for practising Dream Unity's **designed 1D–12D dimensional-reasoning grammar**.
 
+[Open the live dimensional reasoning laboratory](https://dream-unity.github.io/training-dimensions/)
+
 This repository was first copied from `dream-unity/theory` as an exact baseline and then transformed independently. The source repository is not modified.
 
 ## Core design
@@ -57,7 +59,7 @@ npm test
 npm run build
 ```
 
-The Pages workflow always validates and builds the project. It deploys the generated `dist` artifact after this repository has been configured once under **Settings → Pages → Source: GitHub Actions**.
+The GitHub Pages workflow runs the automated test suite, builds the production artifact, opens it in a headless browser, deploys it and verifies the public HTML, JavaScript and CSS assets.
 
 ## Scope
 
