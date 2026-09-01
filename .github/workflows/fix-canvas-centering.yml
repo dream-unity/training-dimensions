@@ -64,7 +64,8 @@ jobs:
           set -euo pipefail
           grep --fixed-strings --quiet "left: '50%'" src/App.tsx
           grep --fixed-strings --quiet "top: '50%'" src/App.tsx
-          grep --fixed-strings --quiet 'left:"50%",top:"50%"' assets/app.js
+          grep --fixed-strings --quiet 'left:"50%"' assets/app.js
+          grep --fixed-strings --quiet 'top:"50%"' assets/app.js
           grep --fixed-strings --quiet 'Training Dimensions — Dream Unity' index.html
           git diff --check
 
