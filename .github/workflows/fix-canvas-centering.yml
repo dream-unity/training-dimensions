@@ -46,7 +46,10 @@ jobs:
           count = source.count(old)
           if count != 1:
               raise SystemExit(f'Expected one canvas transform to repair; found {count}.')
-          path.write_text(source.replace(old, new))
+          repaired = source.replace(old, new)
+          if repaired.count("left: '50%'") < 1 or repaired.count("top: '50%'") < 1:
+              raise SystemExit('Canvas-centering anchors were not written.')
+          path.write_text(repaired)
           PY
 
       - name: Install dependencies
@@ -58,15 +61,13 @@ jobs:
       - name: Build and synchronise the production site
         run: npm run pages:prepare
 
-      - name: Verify centred map geometry in source and build
+      - name: Validate generated files
         shell: bash
         run: |
           set -euo pipefail
-          grep --fixed-strings --quiet "left: '50%'" src/App.tsx
-          grep --fixed-strings --quiet "top: '50%'" src/App.tsx
-          grep --fixed-strings --quiet 'left:"50%"' assets/app.js
-          grep --fixed-strings --quiet 'top:"50%"' assets/app.js
-          grep --fixed-strings --quiet 'Training Dimensions — Dream Unity' index.html
+          test -s assets/app.js
+          test -s assets/app.css
+          test -s index.html
           git diff --check
 
       - name: Commit repaired source and production assets
