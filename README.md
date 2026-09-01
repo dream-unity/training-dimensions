@@ -1,37 +1,51 @@
-# Dream Unity — TheBrain
+# Training Dimensions
 
-A web reconstruction of [TheBrain](https://thebrain.com) for the Dream Unity theory.
+A guided mind-mapping laboratory for practising Dream Unity's **designed 1D–12D dimensional-reasoning grammar**.
 
-This is not a conventional mind map. It is a **Plex**: the active thought sits in the centre and the whole map reorganises around it.
+This repository was created from the `dream-unity/theory` mind-mapping baseline and then transformed independently. The source repository is not modified.
 
-## TheBrain model
+## Core design
 
-| Zone | Position | Meaning |
-| --- | --- | --- |
-| Active thought | Centre | Current focus |
-| Parents | Above | Superordinate topics |
-| Children | Below | Subtopics |
-| Jumps | Left | Related, not hierarchical |
-| Siblings | Right | Share a parent with the active thought |
+- **Nodes are things, states, concepts, observers, rules or systems.**
+- **Lines are explicit semantic relationships.**
+- **Ghost branches are temporary training instructions.** They disappear into the finished relationship after the learner answers them.
+- Every new map begins with one chosen training ceiling from **1D through 12D**.
+- The laboratory gates higher operations until their lower-dimensional foundations are represented.
+- Maps autosave to browser storage and can be exported/imported as JSON.
 
-Each thought has three **gates**: top = parent, bottom = child, left = jump. Hollow means no links; filled means links exist. Drag a gate onto another thought to link them, or drop on empty space to create a new thought.
+## The reasoning ladder
 
-## Views
+| Level | Operation | Training demand |
+|---|---|---|
+| 1D | Isolate | Define one phenomenon, its boundary and present state. |
+| 2D | Connect | State direct pairwise relationships. |
+| 3D | Integrate | Build interacting systems with mediators, constraints and cross-links. |
+| 4D | Track | Represent transformation, sequence, delay and recursive feedback. |
+| 5D | Branch | Compare counterfactual trajectories and branch conditions. |
+| 6D | Expose | Identify assumptions and rules generating the possibility landscape. |
+| 7D | Reframe | Compare and translate between rule-generating frameworks. |
+| 8D | Rotate | Change observer, scale and standpoint while tracking reflexivity. |
+| 9D | Evolve | Model how models update, compete, protect themselves and change. |
+| 10D | Redesign | Alter the architecture generating rules, models and possibilities. |
+| 11D | Coordinate | Track several adaptive architectures recursively changing one another. |
+| 12D | Reconstitute | Invent and test the representational axes used to formulate the problem. |
 
-- **Normal** — the Plex
-- **Outline** — parentless roots and their child trees
-- **Mind Map** — active thought with parents above and children below
-- **Cards** — every visible thought as a note card
-
-Expand shows one extra generation (grandparents / grandchildren).
-
-## Mechanics
-
-Instant Activate search, pins, back/forward/home, notes, URL attachments, types/labels, tags, thought colour, forget instead of hard delete, JSON export/import, local persistence.
-
-Shortcuts: `F6` child, `F7` parent, `F8` jump, `Home`, `Alt+←` / `Alt+→`, `/` search, `Ctrl+Delete` forget. Double-click a thought to create a child.
+## Run locally
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
+
+## Validate and build
+
+```bash
+npm test
+npm run build
+```
+
+GitHub Pages is deployed from the generated `dist` artifact by the repository workflow.
+
+## Scope
+
+“1D–12D” is a pedagogical language for qualitatively different reasoning operations. It is not a claim about literal spatial dimensions, a validated psychometric scale or an IQ test. Its value should be assessed through observable transfer: clearer models, stronger counterfactuals, better prediction, better intervention design and more accurate revision.

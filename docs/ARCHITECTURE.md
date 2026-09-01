@@ -1,13 +1,10 @@
 # Architecture
 
-Vite + React 19 + @xyflow/react.
+Training Dimensions is a static React/Vite application deployable through GitHub Pages.
 
-- `src/seed.ts` — canonical Whole Theory and Mirror & Freedom cards
-- `src/lib/document.ts` — view filters, add/connect/file operations
-- `src/lib/store.ts` — IndexedDB snapshot (`dream-unity-atlas-v2`)
-- `src/components/AtlasCanvas.tsx` — quadrant desk, cards, labelled edges
-- `src/components/FilingRail.tsx` — view switcher
-- `src/components/Inspector.tsx` — selected card readout
-- `src/components/Dossier.tsx` — full note and drawers
-
-GitHub Pages builds from `main` with `.github/workflows/deploy-pages.yml`. Base path is `/theory/`.
+- `src/App.tsx` contains the dimensional curriculum, map state machine, SVG workspace, semantic-edge editor, branch prompts, inspectors, progress gates and JSON portability.
+- `src/styles.css` provides the responsive laboratory interface.
+- Browser `localStorage` provides private, immediate autosave under `dream-unity.training-dimensions.v1`.
+- JSON export/import provides user-controlled portability.
+- The inherited Theory source modules remain available as the copied baseline, while the production entry point is the dimensional laboratory.
+- `scripts/finalize-build.mjs` prepares a clean Pages artifact without carrying old build generations.

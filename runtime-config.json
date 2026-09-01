@@ -1,6 +1,6 @@
 {
-  "repository": "dream-unity/theory",
-  "branch": "theory-live",
-  "dataPath": "public/data/theory.json",
+  "repository": "dream-unity/training-dimensions",
+  "branch": "main",
+  "dataPath": "",
   "githubOAuthClientId": ""
 }

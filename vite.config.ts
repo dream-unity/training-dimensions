@@ -15,7 +15,7 @@ export default defineConfig(({ command }) => ({
       },
     },
   ],
-  base: command === 'serve' ? '/' : '/theory/',
+  base: command === 'serve' ? '/' : '/training-dimensions/',
   server: {
     host: '0.0.0.0',
     port: 8080,

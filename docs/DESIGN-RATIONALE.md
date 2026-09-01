@@ -1,22 +1,11 @@
-# Why the Theory Atlas is built this way
+# Design Rationale
 
-The old observatory hid most of the map behind semantic zoom. This rebuild treats the atlas as a desk you can file on.
+The interface separates **what exists** from **how it relates**.
 
-## Surface
+Permanent category nodes such as “Cause” or “Effect” would force the finished map to preserve the teaching scaffold. Instead, the laboratory presents those operations as temporary ghost branches. The learner answers by naming a real node and an exact semantic line.
 
-- Four stable quadrants — Maker, Machine, World, Unity — surround Unity Core.
-- Every card in the active filing view stays visible. Zoom never deletes landmarks.
-- Notes are typed inside the card. The blinking caret is the point of the method.
-- Edges carry verbs: enables, shapes, grounds, synthesises into, realises as, attunes, integrates.
+The level ladder is operational rather than decorative. More nodes do not create a higher dimension. A level advances only when the learner performs a new operation: relation, interaction, transformation, branching, rule exposure, framework comparison, observer rotation, model evolution, architecture redesign, co-evolution or dimension invention.
 
-## Filing rail
+One-dimensional training is included as a deliberate baseline because precise definition and boundary-setting prevent vague focal concepts from corrupting later relationships. It creates facets, not branches.
 
-Inbox, Whole Theory, Mirror & Freedom, Three Forms, and Realisation Lab are views over one canonical set of concepts. Positions belong to the atlas document so a card can live in more than one drawer without being copied.
-
-## Dossier drawers
-
-Essence, Relations, Grounding, Mirror, and Practice keep the long work off the map but one click away. Facets (portal, form, phase, maturity, stance) stay visible on the selected card.
-
-## Persistence
-
-Edits write to IndexedDB immediately. Restore seeded atlas returns the Whole Theory map from `src/seed.ts`.
+The dark, low-distraction visual system preserves the spatial familiarity of the Theory mind mapper while making prompts, level state and semantic edges visibly distinct.
