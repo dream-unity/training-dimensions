@@ -40,9 +40,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/training-dimensions-preview.log 2>&1 &
-          preview_pid=$!
-          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+          static_root="$(mktemp -d)"
+          mkdir -p "$static_root/training-dimensions"
+          cp -a dist/. "$static_root/training-dimensions/"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory "$static_root" > /tmp/training-dimensions-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
           ready=false
           for attempt in {1..30}; do
@@ -53,7 +56,7 @@ jobs:
             sleep 1
           done
           if [[ "$ready" != "true" ]]; then
-            cat /tmp/training-dimensions-preview.log
+            cat /tmp/training-dimensions-server.log
             exit 1
           fi
 
@@ -85,7 +88,7 @@ jobs:
           echo "Headless browser exit status: ${browser_status}"
 
           if [[ ! -s /tmp/training-dimensions-dom.html ]]; then
-            cat /tmp/training-dimensions-preview.log
+            cat /tmp/training-dimensions-server.log
             cat /tmp/training-dimensions-chrome.log
             exit 1
           fi
@@ -103,6 +106,7 @@ jobs:
           do
             if ! grep --fixed-strings --quiet "$expected" /tmp/training-dimensions-rendered-text.txt; then
               echo "Rendered application is missing: ${expected}" >&2
+              cat /tmp/training-dimensions-server.log
               cat /tmp/training-dimensions-chrome.log
               head -c 12000 /tmp/training-dimensions-rendered-text.txt
               exit 1
