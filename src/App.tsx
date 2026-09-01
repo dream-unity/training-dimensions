@@ -1545,7 +1545,9 @@ function MapCanvas(props: MapCanvasProps) {
           style={{
             width: WORLD_WIDTH,
             height: WORLD_HEIGHT,
-            transform: `translate(calc(50% + ${view.panX}px), calc(50% + ${view.panY}px)) scale(${view.scale}) translate(${-WORLD_CENTRE.x}px, ${-WORLD_CENTRE.y}px)`,
+            left: '50%',
+  top: '50%',
+  transform: `translate(${view.panX}px, ${view.panY}px) scale(${view.scale}) translate(${-WORLD_CENTRE.x}px, ${-WORLD_CENTRE.y}px)`,
           }}
         >
           <svg className="edge-layer" width={WORLD_WIDTH} height={WORLD_HEIGHT} viewBox={`0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`} aria-hidden="true">
