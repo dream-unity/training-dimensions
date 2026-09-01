@@ -1,0 +1,33 @@
+name: Bootstrap from theory
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bootstrap-from-theory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  copy-theory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out training-dimensions
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Copy the theory repository exactly
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp_dir="$(mktemp -d)"
+          git clone --depth 1 https://github.com/dream-unity/theory.git "$temp_dir/theory"
+          rsync -a --delete --exclude='.git/' "$temp_dir/theory/" ./
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Copy theory repository baseline" || exit 0
+          git push origin HEAD:main
