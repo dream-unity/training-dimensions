@@ -1,0 +1,163 @@
+name: Apply comprehensive Life Purpose atlas
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-life-purpose-atlas.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out training-dimensions
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Reconstruct the comprehensive Life Purpose atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat patches/life-purpose-atlas-*.b64 > /tmp/life-purpose-atlas.b64
+          base64 --decode /tmp/life-purpose-atlas.b64 > /tmp/life-purpose-atlas.tar.xz
+          echo '7c36fcff13b1d3aa6996b317499a64986177472421009f1f578ec7021603ea01  /tmp/life-purpose-atlas.tar.xz' | sha256sum --check
+          tar -xJf /tmp/life-purpose-atlas.tar.xz
+          test -s src/life-purpose-example-data.ts
+          test -s src/LifePurposeExampleExplorer.tsx
+          test -s src/life-purpose-examples.css
+          test -s src/life-purpose-example-data.test.ts
+
+      - name: Integrate the real worked maps into the existing front-page guide
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/dimension-experiences.tsx')
+          source = path.read_text()
+
+          import_anchor = "import { useEffect, useState } from 'react'\n"
+          import_line = "import { LifePurposeExampleExplorer } from './LifePurposeExampleExplorer'\n"
+          if import_line not in source:
+              if import_anchor not in source:
+                  raise SystemExit('Could not find dimension guide import anchor.')
+              source = source.replace(import_anchor, import_anchor + import_line, 1)
+
+          atlas_anchor = '''          <div className="guide-line-language">\n            <small>Relationship language this laboratory trains</small>\n            <div>{experience.lineGrammar.map((line) => <span key={line}>{line}</span>)}</div>\n          </div>\n\n          <button className="choose-dimension-button" type="button" onClick={chooseForTraining}>\n'''
+          atlas_replacement = '''          <div className="guide-line-language">\n            <small>Relationship language this laboratory trains</small>\n            <div>{experience.lineGrammar.map((line) => <span key={line}>{line}</span>)}</div>\n          </div>\n\n          <LifePurposeExampleExplorer level={experience.level} />\n\n          <button className="choose-dimension-button" type="button" onClick={chooseForTraining}>\n'''
+          if '<LifePurposeExampleExplorer level={experience.level} />' not in source:
+              if atlas_anchor not in source:
+                  raise SystemExit('Could not find front-page guide insertion anchor.')
+              source = source.replace(atlas_anchor, atlas_replacement, 1)
+
+          path.write_text(source)
+          PY
+
+      - name: Add atlas regression tests and documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          package_path = Path('package.json')
+          package = json.loads(package_path.read_text())
+          package['scripts']['test'] = 'vitest run src/lib/plex.test.ts src/lib/store.test.ts src/dimension-experiences.test.ts src/life-purpose-example-data.test.ts'
+          package_path.write_text(json.dumps(package, indent=2) + '\n')
+
+          readme_path = Path('README.md')
+          readme = readme_path.read_text()
+          section = '''## Complete worked Life Purpose atlas\n\nThe front-page field guide contains **twelve full worked mind maps of the same subject — Life Purpose — from 1D through 12D**. This makes the change in reasoning grammar directly comparable instead of merely describing it. Each map can be revealed construction-stage by construction-stage; every semantic node and relationship can be selected for an explanation of what cognitive move it represents.\n\nThe atlas grows from a single operationally bounded concept into direct relationships, interacting systems, temporal feedback, counterfactual life trajectories, hidden generative rules, competing frameworks, observer-scale rotations, evolving models, designed learning architectures, co-evolving social/ecological systems and finally newly invented representational axes.\n\n'''
+          anchor = '## Interaction model\n'
+          if '## Complete worked Life Purpose atlas\n' not in readme:
+              if anchor not in readme:
+                  raise SystemExit('Could not find README insertion anchor.')
+              readme = readme.replace(anchor, section + anchor, 1)
+          readme_path.write_text(readme)
+          PY
+
+      - name: Verify atlas depth before compiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep --fixed-strings --quiet 'Complete worked mind map · one subject across every dimension' src/LifePurposeExampleExplorer.tsx
+          grep --fixed-strings --quiet 'Life Purpose as an output of hidden generative rules' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose rotated through observers and scales' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose inside co-evolving adaptive architectures' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose remapped by inventing new dimensions' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'beneficiary radius' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'identity permeability' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet '<LifePurposeExampleExplorer level={experience.level} />' src/dimension-experiences.tsx
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('src/life-purpose-example-data.ts').read_text()
+          titles = [
+              'Life Purpose as a precise present hypothesis',
+              'Life Purpose as a field of direct relationships',
+              'Life Purpose as an interacting system',
+              'Life Purpose as a self-transforming temporal loop',
+              'Life Purpose as a space of possible lives',
+              'Life Purpose as an output of hidden generative rules',
+              'Life Purpose translated across coherent frameworks',
+              'Life Purpose rotated through observers and scales',
+              'Life Purpose as an evolving ecology of models',
+              'Life Purpose as a deliberately engineered learning architecture',
+              'Life Purpose inside co-evolving adaptive architectures',
+              'Life Purpose remapped by inventing new dimensions',
+          ]
+          missing = [title for title in titles if title not in text]
+          if missing:
+              raise SystemExit(f'Missing dimensional examples: {missing}')
+          PY
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run inherited and atlas-specific tests
+        run: npm test
+
+      - name: Build and synchronise the production site
+        run: npm run pages:prepare
+
+      - name: Verify the built front page contains the real atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep --fixed-strings --quiet 'Training Dimensions — Dream Unity' index.html
+          grep --fixed-strings --quiet 'Complete worked mind map' assets/app.js
+          grep --fixed-strings --quiet 'Life Purpose' assets/app.js
+          grep --fixed-strings --quiet 'beneficiary radius' assets/app.js
+          grep --fixed-strings --quiet 'Axis Forge' assets/app.js
+          grep --fixed-strings --quiet '.life-purpose-example' assets/app.css
+          git diff --check
+
+      - name: Commit the comprehensive examples and production assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf patches
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No atlas changes were required.'
+            exit 0
+          fi
+          git commit -m 'Add comprehensive Life Purpose maps for every dimension'
+          git push origin HEAD:main
