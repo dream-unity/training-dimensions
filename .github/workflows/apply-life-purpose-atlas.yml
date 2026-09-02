@@ -1,5 +1,6 @@
 name: Apply comprehensive Life Purpose atlas
 
+# Payload segments are byte-verified before integration.
 on:
   push:
     branches: [main]
