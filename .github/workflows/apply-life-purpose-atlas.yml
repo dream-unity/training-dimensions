@@ -1,5 +1,6 @@
 name: Apply comprehensive Life Purpose atlas
 
+# Retry after correcting the staged atlas payload.
 on:
   push:
     branches: [main]
