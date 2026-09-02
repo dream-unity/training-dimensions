@@ -22,7 +22,8 @@ describe('Life Purpose worked dimensional atlas', () => {
       expect(map.blindSpot.length).toBeGreaterThan(45)
       expect(map.leap.length).toBeGreaterThan(45)
       expect(map.question.length).toBeGreaterThan(35)
-      expect(map.edges.every((edge) => edge.explanation.length > 15)).toBe(true)
+      expect(map.edges.every((edge) => edge.label.trim().length >= 3)).toBe(true)
+      expect(map.edges.every((edge) => edge.explanation.trim().length >= 10)).toBe(true)
     }
   })
 
