@@ -1,6 +1,5 @@
 name: Apply comprehensive Life Purpose atlas
 
-# Retry after correcting the staged atlas payload.
 on:
   push:
     branches: [main]
@@ -29,103 +28,52 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Reconstruct the comprehensive Life Purpose atlas
+      - name: Reconstruct the worked-map atlas
         shell: bash
         run: |
           set -euo pipefail
           cat patches/life-purpose-atlas-*.b64 > /tmp/life-purpose-atlas.b64
-          base64 --decode /tmp/life-purpose-atlas.b64 > /tmp/life-purpose-atlas.tar.xz
-          echo '7c36fcff13b1d3aa6996b317499a64986177472421009f1f578ec7021603ea01  /tmp/life-purpose-atlas.tar.xz' | sha256sum --check
-          tar -xJf /tmp/life-purpose-atlas.tar.xz
+          test "$(wc -c < /tmp/life-purpose-atlas.b64)" -eq 60552
+          base64 --decode /tmp/life-purpose-atlas.b64 > /tmp/life-purpose-atlas-payload.tar.gz
+          echo 'ca4721e6563ee529600300744b159ec3d7f15887a838ed568814002c52b5bed8  /tmp/life-purpose-atlas-payload.tar.gz' | sha256sum --check
+          tar -xzf /tmp/life-purpose-atlas-payload.tar.gz
           test -s src/life-purpose-example-data.ts
           test -s src/LifePurposeExampleExplorer.tsx
           test -s src/life-purpose-examples.css
           test -s src/life-purpose-example-data.test.ts
+          test -s apply_life_purpose_atlas.py
 
-      - name: Integrate the real worked maps into the existing front-page guide
+      - name: Integrate the atlas without removing the existing guide
+        run: |
+          set -euo pipefail
+          python3 apply_life_purpose_atlas.py
+          rm apply_life_purpose_atlas.py
+
+      - name: Verify the twelve maps are genuinely worked and dimension-specific
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('src/dimension-experiences.tsx')
-          source = path.read_text()
-
-          import_anchor = "import { useEffect, useState } from 'react'\n"
-          import_line = "import { LifePurposeExampleExplorer } from './LifePurposeExampleExplorer'\n"
-          if import_line not in source:
-              if import_anchor not in source:
-                  raise SystemExit('Could not find dimension guide import anchor.')
-              source = source.replace(import_anchor, import_anchor + import_line, 1)
-
-          atlas_anchor = '''          <div className="guide-line-language">\n            <small>Relationship language this laboratory trains</small>\n            <div>{experience.lineGrammar.map((line) => <span key={line}>{line}</span>)}</div>\n          </div>\n\n          <button className="choose-dimension-button" type="button" onClick={chooseForTraining}>\n'''
-          atlas_replacement = '''          <div className="guide-line-language">\n            <small>Relationship language this laboratory trains</small>\n            <div>{experience.lineGrammar.map((line) => <span key={line}>{line}</span>)}</div>\n          </div>\n\n          <LifePurposeExampleExplorer level={experience.level} />\n\n          <button className="choose-dimension-button" type="button" onClick={chooseForTraining}>\n'''
-          if '<LifePurposeExampleExplorer level={experience.level} />' not in source:
-              if atlas_anchor not in source:
-                  raise SystemExit('Could not find front-page guide insertion anchor.')
-              source = source.replace(atlas_anchor, atlas_replacement, 1)
-
-          path.write_text(source)
-          PY
-
-      - name: Add atlas regression tests and documentation
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          package_path = Path('package.json')
-          package = json.loads(package_path.read_text())
-          package['scripts']['test'] = 'vitest run src/lib/plex.test.ts src/lib/store.test.ts src/dimension-experiences.test.ts src/life-purpose-example-data.test.ts'
-          package_path.write_text(json.dumps(package, indent=2) + '\n')
-
-          readme_path = Path('README.md')
-          readme = readme_path.read_text()
-          section = '''## Complete worked Life Purpose atlas\n\nThe front-page field guide contains **twelve full worked mind maps of the same subject — Life Purpose — from 1D through 12D**. This makes the change in reasoning grammar directly comparable instead of merely describing it. Each map can be revealed construction-stage by construction-stage; every semantic node and relationship can be selected for an explanation of what cognitive move it represents.\n\nThe atlas grows from a single operationally bounded concept into direct relationships, interacting systems, temporal feedback, counterfactual life trajectories, hidden generative rules, competing frameworks, observer-scale rotations, evolving models, designed learning architectures, co-evolving social/ecological systems and finally newly invented representational axes.\n\n'''
-          anchor = '## Interaction model\n'
-          if '## Complete worked Life Purpose atlas\n' not in readme:
-              if anchor not in readme:
-                  raise SystemExit('Could not find README insertion anchor.')
-              readme = readme.replace(anchor, section + anchor, 1)
-          readme_path.write_text(readme)
-          PY
-
-      - name: Verify atlas depth before compiling
-        shell: bash
-        run: |
-          set -euo pipefail
+          grep --fixed-strings --quiet 'How to map every dimension' src/dimension-experiences.tsx
+          grep --fixed-strings --quiet 'One question. Twelve genuinely different mind maps.' src/App.tsx
+          grep --fixed-strings --quiet 'life-purpose-atlas-section' src/App.tsx
+          grep --fixed-strings --quiet 'onOpenLifePurposeExample' src/App.tsx
           grep --fixed-strings --quiet 'Complete worked mind map · one subject across every dimension' src/LifePurposeExampleExplorer.tsx
+          grep --fixed-strings --quiet 'Life Purpose as an interacting system' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose as a self-transforming temporal loop' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose as a space of possible lives' src/life-purpose-example-data.ts
           grep --fixed-strings --quiet 'Life Purpose as an output of hidden generative rules' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose translated across coherent frameworks' src/life-purpose-example-data.ts
           grep --fixed-strings --quiet 'Life Purpose rotated through observers and scales' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose as an evolving ecology of models' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Life Purpose as a deliberately engineered learning architecture' src/life-purpose-example-data.ts
           grep --fixed-strings --quiet 'Life Purpose inside co-evolving adaptive architectures' src/life-purpose-example-data.ts
           grep --fixed-strings --quiet 'Life Purpose remapped by inventing new dimensions' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Delayed Burnout Signal' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Excluded Outsider' src/life-purpose-example-data.ts
+          grep --fixed-strings --quiet 'Purpose Red-Team' src/life-purpose-example-data.ts
           grep --fixed-strings --quiet 'beneficiary radius' src/life-purpose-example-data.ts
           grep --fixed-strings --quiet 'identity permeability' src/life-purpose-example-data.ts
-          grep --fixed-strings --quiet '<LifePurposeExampleExplorer level={experience.level} />' src/dimension-experiences.tsx
-          python3 - <<'PY'
-          from pathlib import Path
-          text = Path('src/life-purpose-example-data.ts').read_text()
-          titles = [
-              'Life Purpose as a precise present hypothesis',
-              'Life Purpose as a field of direct relationships',
-              'Life Purpose as an interacting system',
-              'Life Purpose as a self-transforming temporal loop',
-              'Life Purpose as a space of possible lives',
-              'Life Purpose as an output of hidden generative rules',
-              'Life Purpose translated across coherent frameworks',
-              'Life Purpose rotated through observers and scales',
-              'Life Purpose as an evolving ecology of models',
-              'Life Purpose as a deliberately engineered learning architecture',
-              'Life Purpose inside co-evolving adaptive architectures',
-              'Life Purpose remapped by inventing new dimensions',
-          ]
-          missing = [title for title in titles if title not in text]
-          if missing:
-              raise SystemExit(f'Missing dimensional examples: {missing}')
-          PY
+          grep --fixed-strings --quiet 'Axis Revision Rule' src/life-purpose-example-data.ts
 
       - name: Install dependencies
         run: npm ci
@@ -133,22 +81,55 @@ jobs:
       - name: Run inherited and atlas-specific tests
         run: npm test
 
-      - name: Build and synchronise the production site
+      - name: Build and synchronise production assets
         run: npm run pages:prepare
 
-      - name: Verify the built front page contains the real atlas
+      - name: Verify production bundle contains the atlas
         shell: bash
         run: |
           set -euo pipefail
           grep --fixed-strings --quiet 'Training Dimensions — Dream Unity' index.html
+          grep --fixed-strings --quiet 'One question. Twelve genuinely different mind maps.' assets/app.js
           grep --fixed-strings --quiet 'Complete worked mind map' assets/app.js
-          grep --fixed-strings --quiet 'Life Purpose' assets/app.js
-          grep --fixed-strings --quiet 'beneficiary radius' assets/app.js
-          grep --fixed-strings --quiet 'Axis Forge' assets/app.js
-          grep --fixed-strings --quiet '.life-purpose-example' assets/app.css
+          grep --fixed-strings --quiet 'Delayed Burnout Signal' assets/app.js
+          grep --fixed-strings --quiet 'Purpose Red-Team' assets/app.js
+          grep --fixed-strings --quiet 'Axis Revision Rule' assets/app.js
+          grep --fixed-strings --quiet '.life-purpose-atlas-section' assets/app.css
           git diff --check
 
-      - name: Commit the comprehensive examples and production assets
+      - name: Browser-render the actual front-page atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          static_root="$(mktemp -d)"
+          mkdir -p "$static_root/training-dimensions"
+          cp -a dist/. "$static_root/training-dimensions/"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory "$static_root" > /tmp/life-atlas-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            curl --silent --fail http://127.0.0.1:4173/training-dimensions/ >/dev/null && break
+            sleep 1
+          done
+          browser="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser"
+          "$browser" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --window-size=1600,2200 --virtual-time-budget=7000 --dump-dom http://127.0.0.1:4173/training-dimensions/ > /tmp/life-atlas-dom.html
+          sed -E 's/<[^>]+>/ /g' /tmp/life-atlas-dom.html | tr '\n' ' ' | tr -s '[:space:]' ' ' > /tmp/life-atlas-text.txt
+          grep --fixed-strings --quiet 'Worked example atlas · Life Purpose' /tmp/life-atlas-text.txt
+          grep --fixed-strings --quiet 'One question. Twelve genuinely different mind maps.' /tmp/life-atlas-text.txt
+          grep --fixed-strings --quiet 'Complete worked mind map · one subject across every dimension' /tmp/life-atlas-text.txt
+          grep --fixed-strings --quiet 'Open an editable copy' /tmp/life-atlas-text.txt
+          "$browser" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --hide-scrollbars --window-size=1600,2200 --virtual-time-budget=7000 --screenshot=/tmp/life-purpose-atlas.png http://127.0.0.1:4173/training-dimensions/
+          test -s /tmp/life-purpose-atlas.png
+
+      - name: Upload visual verification
+        uses: actions/upload-artifact@v5
+        with:
+          name: life-purpose-atlas-browser-check
+          path: /tmp/life-purpose-atlas.png
+          retention-days: 2
+
+      - name: Commit comprehensive examples and production assets
         shell: bash
         run: |
           set -euo pipefail
@@ -160,5 +141,5 @@ jobs:
             echo 'No atlas changes were required.'
             exit 0
           fi
-          git commit -m 'Add comprehensive Life Purpose maps for every dimension'
+          git commit -m 'Implement comprehensive Life Purpose maps across 1D–12D'
           git push origin HEAD:main
