@@ -1,0 +1,133 @@
+name: Integrate worked Life Purpose maps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/integrate-worked-life-purpose-maps.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  integrate-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out training laboratory
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Insert the worked atlas without removing the existing guide
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/dimension-experiences.tsx')
+          source = path.read_text()
+
+          react_import = "import { useEffect, useState } from 'react'\n"
+          atlas_import = "import { LifePurposeAtlas } from './LifePurposeAtlas'\n"
+          if atlas_import not in source:
+              if react_import not in source:
+                  raise SystemExit('Could not find React import in dimension-experiences.tsx')
+              source = source.replace(react_import, react_import + atlas_import, 1)
+
+          anchor = '''          <div className="guide-line-language">\n            <small>Relationship language this laboratory trains</small>\n            <div>{experience.lineGrammar.map((line) => <span key={line}>{line}</span>)}</div>\n          </div>\n\n          <button className="choose-dimension-button" type="button" onClick={chooseForTraining}>\n'''
+          replacement = '''          <div className="guide-line-language">\n            <small>Relationship language this laboratory trains</small>\n            <div>{experience.lineGrammar.map((line) => <span key={line}>{line}</span>)}</div>\n          </div>\n\n          <LifePurposeAtlas level={experience.level} />\n\n          <button className="choose-dimension-button" type="button" onClick={chooseForTraining}>\n'''
+          if '<LifePurposeAtlas level={experience.level} />' not in source:
+              if anchor not in source:
+                  raise SystemExit('Could not find guide insertion point; existing guide has changed unexpectedly.')
+              source = source.replace(anchor, replacement, 1)
+
+          path.write_text(source)
+          PY
+
+      - name: Document the comparative worked atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('README.md')
+          text = path.read_text()
+          section = '''## Complete worked Life Purpose maps\n\nThe front-page field guide now preserves the concise dimensional instructions **and adds a full worked mind map of the same subject, Life Purpose, at every level from 1D through 12D**. Keeping one subject constant makes the cognitive change itself visible.\n\nEach map is built progressively in four construction stages. Concepts and semantic relationship lines are selectable and explain why that move belongs at that dimension. The examples progress from precise isolation and direct relationships through interacting systems, temporal feedback, alternative life trajectories, hidden possibility-generating rules, framework translation, observer rotation, evolving models, designed learning architectures, co-evolving social/ecological systems and newly invented representational axes.\n\nThe 12D example explicitly introduces axes including recoverability, beneficiary radius, temporal depth, generativity, epistemic exposure, identity permeability, embodiment, interdependence and regenerative capacity, then shows how those axes can change the ranking of the same life options and how the axes themselves must remain revisable.\n\n'''
+          anchor = '## Interaction model\n'
+          if '## Complete worked Life Purpose maps\n' not in text:
+              if anchor not in text:
+                  raise SystemExit('README interaction-model anchor missing.')
+              text = text.replace(anchor, section + anchor, 1)
+          path.write_text(text)
+          PY
+
+      - name: Verify source integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep --fixed-strings --quiet "import { LifePurposeAtlas } from './LifePurposeAtlas'" src/dimension-experiences.tsx
+          grep --fixed-strings --quiet '<LifePurposeAtlas level={experience.level} />' src/dimension-experiences.tsx
+          grep --fixed-strings --quiet 'Life Purpose as an output of hidden generative rules' src/life-purpose-atlas-data.ts
+          grep --fixed-strings --quiet 'Life Purpose rotated through observers and scales' src/life-purpose-atlas-data.ts
+          grep --fixed-strings --quiet 'Life Purpose inside co-evolving adaptive architectures' src/life-purpose-atlas-data.ts
+          grep --fixed-strings --quiet 'NEW AXIS: Beneficiary Radius' src/life-purpose-atlas-data.ts
+          grep --fixed-strings --quiet 'NEW AXIS: Identity Permeability' src/life-purpose-atlas-data.ts
+          grep --fixed-strings --quiet 'Click the map to understand the move' src/LifePurposeAtlas.tsx
+          git diff --check
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run all reasoning and map regression tests
+        run: npm test
+
+      - name: Build production application
+        run: npm run pages:prepare
+
+      - name: Browser smoke test the actual guide with atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          static_root="$(mktemp -d)"
+          mkdir -p "$static_root/training-dimensions"
+          cp -a dist/. "$static_root/training-dimensions/"
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory "$static_root" >/tmp/atlas-server.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in {1..20}; do
+            curl --silent --fail http://127.0.0.1:4173/training-dimensions/ >/dev/null && break
+            sleep 1
+          done
+          browser="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser"
+          "$browser" --headless=new --no-sandbox --disable-dev-shm-usage --window-size=1600,1400 --virtual-time-budget=5000 --dump-dom http://127.0.0.1:4173/training-dimensions/ > /tmp/atlas-dom.html
+          sed -E 's/<[^>]+>/ /g' /tmp/atlas-dom.html | tr '\n' ' ' | tr -s '[:space:]' ' ' > /tmp/atlas-text.txt
+          grep --fixed-strings --quiet 'How to map every dimension' /tmp/atlas-text.txt
+          grep --fixed-strings --quiet 'Worked example · same subject through every dimension' /tmp/atlas-text.txt
+          grep --fixed-strings --quiet 'Life Purpose' /tmp/atlas-text.txt
+          grep --fixed-strings --quiet 'Conceptual revelations from the worked map' /tmp/atlas-text.txt
+
+      - name: Commit integration and built Pages assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/dimension-experiences.tsx README.md index.html app.html .nojekyll assets
+          if git diff --cached --quiet; then
+            echo 'Nothing to commit.'
+            exit 0
+          fi
+          git commit -m 'Embed complete Life Purpose maps in every dimensional guide'
+          git push origin HEAD:main
