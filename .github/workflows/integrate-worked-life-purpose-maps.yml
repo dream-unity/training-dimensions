@@ -1,5 +1,6 @@
 name: Integrate worked Life Purpose maps
 
+# Retry after refining semantic-edge regression validation.
 on:
   push:
     branches: [main]
