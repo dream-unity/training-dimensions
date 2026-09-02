@@ -65,3 +65,9 @@ The GitHub Pages workflow runs the automated test suite, builds the production a
 ## Scope
 
 “1D–12D” is a pedagogical language for qualitatively different reasoning operations. It is not a claim about literal spatial dimensions, a validated psychometric scale or an IQ test. Its value should be assessed through observable transfer: clearer models, stronger counterfactuals, better prediction, better intervention design and more accurate revision.
+
+## Worked example atlas: Life Purpose
+
+The front page contains a full worked **Life Purpose** mind map for every dimension from 1D through 12D. These are not decorative guide diagrams. Each map contains its own concepts, semantic relationships, construction stages, dimensional blind spots and conceptual revelations. Learners can reveal each map stage-by-stage, inspect every node and relationship, and open the completed example as an editable training map.
+
+The sequence deliberately rebuilds the same subject using progressively different operations: precise definition, pairwise relations, interacting systems, temporal feedback, counterfactual futures, generative rules, framework translation, observer rotation, model evolution, architecture design, co-evolution and representational-axis invention.

@@ -15,6 +15,11 @@ import {
   experiencePromptOffset,
   getDimensionExperience,
 } from './dimension-experiences'
+import { LifePurposeExampleExplorer } from './LifePurposeExampleExplorer'
+import {
+  getLifePurposeExampleMap,
+  type LifePurposeExampleLevel,
+} from './life-purpose-example-data'
 
 type DimensionLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
 type Direction = 'out' | 'in' | 'either'
@@ -908,6 +913,17 @@ export default function App() {
     setActiveLevel(map.dimension)
   }
 
+  function openLifePurposeExample(level: LifePurposeExampleLevel) {
+    const map = makeLifePurposeExampleLabMap(level)
+    setMaps((current) => [map, ...current])
+    setSelectedDimension(level)
+    setActiveId(map.id)
+    setActiveNodeId(map.rootId)
+    setActiveEdgeId('')
+    setActiveLevel(level)
+    setComposer(null)
+  }
+
   if (!activeMap) {
     return (
       <StartScreen
@@ -923,6 +939,7 @@ export default function App() {
           setMaps((current) => current.filter((map) => map.id !== id))
         }}
         onImport={importMap}
+        onOpenLifePurposeExample={openLifePurposeExample}
       />
     )
   }
@@ -1081,6 +1098,7 @@ interface StartScreenProps {
   onOpen: (id: string) => void
   onDelete: (id: string) => void
   onImport: (event: ChangeEvent<HTMLInputElement>) => void
+  onOpenLifePurposeExample: (level: LifePurposeExampleLevel) => void
 }
 
 function StartScreen(props: StartScreenProps) {
@@ -1183,6 +1201,38 @@ function StartScreen(props: StartScreenProps) {
         selectedLevel={props.selectedDimension}
         onSelect={(level) => props.onDimension(level as DimensionLevel)}
       />
+
+      <section className="life-purpose-atlas-section" id="life-purpose-example-atlas">
+        <div className="life-atlas-heading">
+          <div>
+            <span className="eyebrow">Worked example atlas · Life Purpose</span>
+            <h2>One question. Twelve genuinely different mind maps.</h2>
+          </div>
+          <p>
+            The guide above explains the grammar. This atlas now demonstrates it. The same subject—Life Purpose—is rebuilt from scratch at every dimension so you can inspect the actual nodes, semantic lines, feedback loops, alternative futures, hidden generators, observers, evolving models, architectures and invented axes.
+          </p>
+        </div>
+        <div className="life-atlas-switcher" role="tablist" aria-label="Life Purpose example dimension">
+          {DIMENSIONS.map((item) => (
+            <button
+              key={`life-example-${item.level}`}
+              type="button"
+              role="tab"
+              aria-selected={props.selectedDimension === item.level}
+              className={props.selectedDimension === item.level ? 'active' : ''}
+              style={{ '--atlas-accent': levelColour(item.level) } as CSSProperties}
+              onClick={() => props.onDimension(item.level)}
+            >
+              {item.level}D
+            </button>
+          ))}
+        </div>
+        <p className="life-atlas-note">Select a dimension, reveal the map stage by stage, then click any node or relationship to understand why it belongs. “Open an editable copy” loads the complete worked example into the training laboratory so you can dismantle and rebuild it.</p>
+        <LifePurposeExampleExplorer
+          level={props.selectedDimension}
+          onOpenEditable={props.onOpenLifePurposeExample}
+        />
+      </section>
 
       <section className="saved-section">
         <div className="saved-heading">
@@ -1934,6 +1984,46 @@ function dimension(level: DimensionLevel): DimensionDefinition {
 
 function toDimension(value: number): DimensionLevel {
   return Math.max(1, Math.min(12, Math.round(value))) as DimensionLevel
+}
+
+function makeLifePurposeExampleLabMap(level: LifePurposeExampleLevel): LabMap {
+  const example = getLifePurposeExampleMap(level)
+  const now = new Date().toISOString()
+  const scale = Math.min(1.48, 2860 / example.viewBox.width, 1960 / example.viewBox.height)
+  const mappedId = (id: string) => `life-purpose-d${level}-${id}`
+  return {
+    schemaVersion: 1,
+    id: makeId('map'),
+    title: `Life Purpose · ${level}D worked example`,
+    subject: example.subject,
+    dimension: level,
+    rootId: mappedId(example.rootId),
+    nodes: example.nodes.map((node) => ({
+      id: mappedId(node.id),
+      label: node.label,
+      kind: node.kind,
+      x: WORLD_CENTRE.x + (node.x - example.viewBox.width / 2) * scale,
+      y: WORLD_CENTRE.y + (node.y - example.viewBox.height / 2) * scale,
+      layer: level,
+      context: node.context || `Worked example · stage ${node.stage}`,
+      notes: `${node.role}\n\n${node.explanation}\n\nConstruction stage ${node.stage}: ${example.stages[Math.max(0, node.stage - 1)]?.instruction ?? ''}`,
+      confidence: node.confidence,
+      createdAt: now,
+    })),
+    edges: example.edges.map((edge) => ({
+      id: mappedId(`edge-${edge.id}`),
+      from: mappedId(edge.from),
+      to: mappedId(edge.to),
+      relation: edge.relation,
+      layer: level,
+      promptId: edge.promptId,
+      bidirectional: edge.bidirectional,
+      notes: edge.explanation,
+    })),
+    focus: { ...example.focus },
+    createdAt: now,
+    updatedAt: now,
+  }
 }
 
 function makeMap(subject: string, dimensionLevel: DimensionLevel): LabMap {

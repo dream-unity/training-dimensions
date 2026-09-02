@@ -1,0 +1,762 @@
+.life-purpose-atlas-section {
+  width: min(1440px, calc(100% - 48px));
+  margin: 92px auto 0;
+  position: relative;
+  z-index: 1;
+}
+
+.life-atlas-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.15fr);
+  gap: 48px;
+  align-items: end;
+  padding: 0 0 28px;
+  border-bottom: 1px solid rgba(147, 166, 196, 0.16);
+}
+
+.life-atlas-heading h2 {
+  margin: 8px 0 0;
+  max-width: 760px;
+  font-size: clamp(36px, 4.4vw, 66px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+.life-atlas-heading p {
+  margin: 0;
+  color: #a6b5c9;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.life-atlas-switcher {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(62px, 1fr));
+  gap: 7px;
+  margin: 20px 0 14px;
+}
+
+.life-atlas-switcher button {
+  min-height: 52px;
+  border: 1px solid rgba(147, 166, 196, 0.16);
+  border-radius: 11px;
+  background: rgba(9, 16, 28, 0.84);
+  color: #7f8ea4;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  transition: 140ms ease;
+}
+
+.life-atlas-switcher button:hover {
+  color: #e8f0fa;
+  border-color: rgba(178, 196, 224, 0.34);
+  transform: translateY(-1px);
+}
+
+.life-atlas-switcher button.active {
+  color: var(--atlas-accent, #90e2d1);
+  border-color: color-mix(in srgb, var(--atlas-accent, #90e2d1) 70%, transparent);
+  background: color-mix(in srgb, var(--atlas-accent, #90e2d1) 10%, #0c1524 90%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-accent, #90e2d1) 18%, transparent);
+}
+
+.life-atlas-note {
+  margin: 0 0 22px;
+  color: #76859a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.life-purpose-example {
+  --life-accent: var(--level-accent, #8de4d2);
+  border: 1px solid rgba(148, 169, 202, 0.19);
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 3%, color-mix(in srgb, var(--life-accent) 10%, transparent), transparent 35rem),
+    linear-gradient(155deg, rgba(13, 22, 36, 0.98), rgba(6, 11, 20, 0.99));
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.38), inset 0 1px rgba(255, 255, 255, 0.028);
+}
+
+.example-theme-d1 { --life-accent: #75d8cb; }
+.example-theme-d2 { --life-accent: #62cfe5; }
+.example-theme-d3 { --life-accent: #66d7b8; }
+.example-theme-d4 { --life-accent: #a996ff; }
+.example-theme-d5 { --life-accent: #d29cff; }
+.example-theme-d6 { --life-accent: #efaf78; }
+.example-theme-d7 { --life-accent: #e3ce7d; }
+.example-theme-d8 { --life-accent: #8bc7ff; }
+.example-theme-d9 { --life-accent: #e998be; }
+.example-theme-d10 { --life-accent: #8ed9ec; }
+.example-theme-d11 { --life-accent: #9ae1a2; }
+.example-theme-d12 { --life-accent: #f0c47d; }
+
+.life-example-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 34px;
+  align-items: end;
+  padding: 32px 34px 20px;
+}
+
+.life-example-heading h3 {
+  margin: 7px 0 4px;
+  font-size: clamp(27px, 3vw, 43px);
+  letter-spacing: -0.04em;
+}
+
+.life-example-heading p {
+  margin: 0;
+  color: #98a7bb;
+  font-size: 14px;
+}
+
+.life-example-kicker,
+.life-build-intro > span,
+.life-dimensional-comparison article > span,
+.life-revelations > div > span,
+.life-closing-question span,
+.life-selection-card > span,
+.life-stage-insight > span,
+.life-focus-card span {
+  color: var(--life-accent);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.life-example-metrics {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.life-example-metrics span {
+  padding: 9px 11px;
+  border: 1px solid rgba(146, 167, 197, 0.16);
+  border-radius: 10px;
+  color: #8594a9;
+  background: rgba(5, 10, 18, 0.62);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.life-example-metrics b {
+  margin-right: 4px;
+  color: #e6eef8;
+  font-size: 13px;
+}
+
+.life-example-thesis {
+  margin: 0 34px 28px;
+  padding: 18px 20px;
+  border-left: 2px solid color-mix(in srgb, var(--life-accent) 74%, transparent);
+  background: color-mix(in srgb, var(--life-accent) 5%, rgba(9, 16, 27, 0.78));
+  color: #b6c2d3;
+  line-height: 1.72;
+  font-size: 13px;
+}
+
+.life-build-sequence {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  margin: 0 34px 24px;
+  padding: 18px;
+  border: 1px solid rgba(147, 166, 196, 0.14);
+  border-radius: 16px;
+  background: rgba(5, 10, 18, 0.58);
+}
+
+.life-build-intro p {
+  margin: 7px 0 0;
+  color: #7f8da1;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.life-stage-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 7px;
+}
+
+.life-stage-buttons button {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(145, 166, 197, 0.13);
+  border-radius: 10px;
+  background: rgba(10, 18, 31, 0.72);
+  text-align: left;
+  color: #8b99ad;
+  cursor: pointer;
+}
+
+.life-stage-buttons button.revealed {
+  border-color: color-mix(in srgb, var(--life-accent) 30%, transparent);
+}
+
+.life-stage-buttons button.active {
+  color: #eef5fc;
+  border-color: color-mix(in srgb, var(--life-accent) 66%, transparent);
+  background: color-mix(in srgb, var(--life-accent) 9%, #0c1523 91%);
+}
+
+.life-stage-buttons i {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--life-accent) 12%, #101827);
+  color: var(--life-accent);
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.life-stage-buttons b,
+.life-stage-buttons small {
+  display: block;
+}
+
+.life-stage-buttons b {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.life-stage-buttons small {
+  margin-top: 4px;
+  color: #68768b;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.life-example-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 284px;
+  border-top: 1px solid rgba(147, 166, 196, 0.15);
+  border-bottom: 1px solid rgba(147, 166, 196, 0.15);
+  min-height: 670px;
+}
+
+.life-map-shell {
+  min-width: 0;
+  background:
+    radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--life-accent) 7%, transparent), transparent 30rem),
+    #050a12;
+}
+
+.life-map-toolbar {
+  min-height: 62px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 14px 10px 20px;
+  border-bottom: 1px solid rgba(147, 166, 196, 0.12);
+  background: rgba(8, 14, 24, 0.88);
+}
+
+.life-map-toolbar span,
+.life-map-toolbar b {
+  display: block;
+}
+
+.life-map-toolbar span {
+  color: var(--life-accent);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+
+.life-map-toolbar b {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.life-map-toolbar > div:last-child {
+  display: flex;
+  gap: 7px;
+}
+
+.life-map-toolbar button {
+  padding: 8px 10px;
+  border: 1px solid rgba(147, 166, 196, 0.15);
+  border-radius: 9px;
+  background: rgba(14, 23, 37, 0.78);
+  color: #8493a8;
+  cursor: pointer;
+  font-size: 9px;
+}
+
+.life-map-toolbar button.active,
+.life-map-toolbar button:hover {
+  color: #e9f1fa;
+  border-color: color-mix(in srgb, var(--life-accent) 48%, transparent);
+}
+
+.life-map-scroll {
+  width: 100%;
+  min-height: 560px;
+  overflow: auto;
+  scrollbar-color: rgba(137, 158, 190, 0.28) transparent;
+}
+
+.life-purpose-map {
+  display: block;
+  width: max(100%, 1030px);
+  min-width: 1030px;
+  height: auto;
+  min-height: 560px;
+  touch-action: pan-x pan-y;
+}
+
+.life-map-background {
+  fill: rgba(4, 9, 16, 0.98);
+}
+
+.life-purpose-map pattern circle {
+  fill: color-mix(in srgb, var(--life-accent) 20%, transparent);
+  opacity: 0.18;
+}
+
+.life-example-edge {
+  cursor: pointer;
+  outline: none;
+}
+
+.life-edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 20;
+}
+
+.life-edge-visible {
+  fill: none;
+  stroke: color-mix(in srgb, var(--life-accent) 48%, #7f8ea4 52%);
+  stroke-width: 1.6;
+  opacity: 0.66;
+}
+
+.life-example-edge.weight-primary .life-edge-visible {
+  stroke: var(--life-accent);
+  stroke-width: 2.1;
+  opacity: 0.82;
+}
+
+.life-example-edge.weight-tension .life-edge-visible {
+  stroke: #d88598;
+  opacity: 0.72;
+}
+
+.life-example-edge.dashed .life-edge-visible {
+  stroke-dasharray: 8 7;
+}
+
+.life-example-edge.selected .life-edge-visible,
+.life-example-edge:focus .life-edge-visible,
+.life-example-edge:hover .life-edge-visible {
+  stroke-width: 3.2;
+  opacity: 1;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--life-accent) 68%, transparent));
+}
+
+.life-purpose-map marker path {
+  fill: var(--life-accent);
+  opacity: 0.8;
+}
+
+.life-edge-label rect {
+  fill: rgba(7, 13, 22, 0.93);
+  stroke: rgba(151, 174, 207, 0.18);
+}
+
+.life-edge-label text {
+  fill: #aab8ca;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.life-example-node {
+  cursor: pointer;
+  outline: none;
+}
+
+.life-example-node rect {
+  fill: rgba(12, 20, 33, 0.97);
+  stroke: color-mix(in srgb, var(--life-accent) 36%, #526178 64%);
+  stroke-width: 1.3;
+}
+
+.life-example-node.root rect {
+  fill: color-mix(in srgb, var(--life-accent) 12%, #101827 88%);
+  stroke: var(--life-accent);
+  stroke-width: 2.2;
+}
+
+.life-example-node.kind-rule rect,
+.life-example-node.kind-axis rect,
+.life-example-node.kind-architecture rect,
+.life-example-node.kind-framework rect,
+.life-example-node.kind-observer rect,
+.life-example-node.kind-model rect,
+.life-example-node.kind-system rect,
+.life-example-node.kind-trajectory rect {
+  stroke-width: 1.7;
+}
+
+.life-example-node.selected rect,
+.life-example-node:focus rect,
+.life-example-node:hover rect {
+  stroke: #f0f6fc;
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--life-accent) 58%, transparent));
+}
+
+.life-node-kind {
+  fill: var(--life-accent);
+  font-size: 6.8px;
+  font-weight: 850;
+  letter-spacing: 0.11em;
+}
+
+.life-node-title {
+  fill: #e4edf7;
+  font-size: 10.5px;
+  font-weight: 760;
+}
+
+.life-map-caption {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 18px;
+  border-top: 1px solid rgba(147, 166, 196, 0.1);
+  color: #718096;
+  font-size: 9px;
+}
+
+.life-map-caption > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.life-map-caption i {
+  width: 12px;
+  height: 8px;
+  margin-right: -7px;
+  display: inline-block;
+  border: 1px solid #718096;
+  border-radius: 3px;
+}
+
+.life-map-caption .legend-root { border-color: var(--life-accent); }
+.life-map-caption .legend-tension { border-color: #d88598; }
+.life-map-caption .legend-line { height: 0; border-width: 1px 0 0; border-radius: 0; }
+
+.life-map-inspector {
+  min-width: 0;
+  padding: 16px;
+  border-left: 1px solid rgba(147, 166, 196, 0.14);
+  background: rgba(9, 16, 27, 0.92);
+}
+
+.life-selection-card,
+.life-stage-insight {
+  padding: 16px;
+  border: 1px solid rgba(147, 166, 196, 0.14);
+  border-radius: 14px;
+  background: rgba(5, 10, 18, 0.68);
+}
+
+.life-selection-card h4,
+.life-stage-insight h4 {
+  margin: 7px 0 5px;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.life-selection-card > b {
+  color: #aab8ca;
+  font-size: 10px;
+}
+
+.life-selection-card p,
+.life-stage-insight p {
+  margin: 10px 0;
+  color: #8796aa;
+  font-size: 11px;
+  line-height: 1.62;
+}
+
+.life-selection-card > small {
+  display: block;
+  color: #65748b;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.life-selection-card > div:not(.life-edge-sentence):not(.life-confidence-track) {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: #738196;
+  font-size: 9px;
+}
+
+.life-selection-card em {
+  font-style: normal;
+}
+
+.life-selection-card strong {
+  color: #dce6f2;
+}
+
+.life-confidence-track {
+  height: 4px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: rgba(142, 163, 194, 0.12);
+  overflow: hidden;
+}
+
+.life-confidence-track i {
+  display: block;
+  height: 100%;
+  background: var(--life-accent);
+}
+
+.life-selection-card blockquote,
+.life-stage-insight blockquote {
+  margin: 12px 0 0;
+  padding: 11px;
+  border-left: 2px solid var(--life-accent);
+  background: color-mix(in srgb, var(--life-accent) 5%, transparent);
+  color: #aab8ca;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.life-edge-sentence {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 7px;
+  align-items: center;
+  margin-top: 13px !important;
+  padding: 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--life-accent) 5%, #08101b 95%);
+  text-align: center;
+}
+
+.life-edge-sentence b {
+  color: #dce6f2;
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.life-edge-sentence i {
+  color: var(--life-accent);
+  font-style: normal;
+}
+
+.life-stage-insight {
+  margin-top: 12px;
+}
+
+.life-dimensional-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 24px 34px 0;
+}
+
+.life-dimensional-comparison article {
+  padding: 16px 18px;
+  border: 1px solid rgba(147, 166, 196, 0.14);
+  border-radius: 14px;
+  background: rgba(5, 10, 18, 0.5);
+}
+
+.life-dimensional-comparison article:first-child {
+  border-color: rgba(195, 102, 126, 0.25);
+}
+
+.life-dimensional-comparison article:first-child > span {
+  color: #d9899d;
+}
+
+.life-dimensional-comparison p {
+  margin: 8px 0 0;
+  color: #96a5b8;
+  font-size: 11px;
+  line-height: 1.62;
+}
+
+.life-revelations {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 24px;
+  margin: 12px 34px 0;
+  padding: 22px;
+  border: 1px solid rgba(147, 166, 196, 0.14);
+  border-radius: 14px;
+  background: rgba(5, 10, 18, 0.5);
+}
+
+.life-revelations h4 {
+  margin: 8px 0 0;
+  font-size: 18px;
+}
+
+.life-revelations ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px 18px;
+}
+
+.life-revelations li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  color: #9baabd;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.life-revelations li i {
+  color: var(--life-accent);
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.life-closing-question {
+  margin: 12px 34px 0;
+  padding: 20px 22px;
+  border: 1px solid color-mix(in srgb, var(--life-accent) 28%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--life-accent) 6%, #08101b 94%);
+  color: #dce6f2;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.life-closing-question span {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.life-open-editable {
+  width: calc(100% - 68px);
+  min-height: 66px;
+  margin: 14px 34px 34px;
+  padding: 12px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid color-mix(in srgb, var(--life-accent) 60%, transparent);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--life-accent) 80%, #eaf6f4 20%);
+  color: #071019;
+  cursor: pointer;
+  text-align: left;
+}
+
+.life-open-editable small,
+.life-open-editable b {
+  display: block;
+}
+
+.life-open-editable small {
+  opacity: 0.64;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.life-open-editable b {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.life-open-editable i {
+  font-style: normal;
+  font-size: 22px;
+}
+
+.life-focus-field > ellipse {
+  fill: none;
+  stroke: color-mix(in srgb, var(--life-accent) 34%, transparent);
+  stroke-width: 1.2;
+  stroke-dasharray: 8 10;
+}
+
+.life-focus-card {
+  height: 100%;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--life-accent) 25%, transparent);
+  border-radius: 12px;
+  background: rgba(8, 15, 25, 0.96);
+  color: #a7b5c7;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.life-focus-card p {
+  margin: 8px 0 0;
+  font-size: 10px;
+  line-height: 1.54;
+}
+
+@media (max-width: 1180px) {
+  .life-atlas-switcher { grid-template-columns: repeat(6, 1fr); }
+  .life-example-workspace { grid-template-columns: 1fr; }
+  .life-map-inspector {
+    border-left: 0;
+    border-top: 1px solid rgba(147, 166, 196, 0.14);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .life-stage-insight { margin-top: 0; }
+  .life-stage-buttons { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .life-purpose-atlas-section { width: min(100% - 24px, 1440px); margin-top: 62px; }
+  .life-atlas-heading { grid-template-columns: 1fr; gap: 16px; }
+  .life-atlas-heading h2 { font-size: 38px; }
+  .life-atlas-switcher { grid-template-columns: repeat(4, 1fr); }
+  .life-example-heading { display: block; padding: 24px 20px 14px; }
+  .life-example-metrics { justify-content: flex-start; margin-top: 14px; }
+  .life-example-thesis { margin: 0 20px 20px; }
+  .life-build-sequence { grid-template-columns: 1fr; margin: 0 20px 20px; }
+  .life-stage-buttons { grid-template-columns: 1fr 1fr; }
+  .life-map-toolbar { align-items: flex-start; }
+  .life-map-toolbar > div:last-child { display: grid; }
+  .life-purpose-map { width: 980px; min-width: 980px; }
+  .life-map-inspector { grid-template-columns: 1fr; }
+  .life-dimensional-comparison { grid-template-columns: 1fr; padding: 20px 20px 0; }
+  .life-revelations { grid-template-columns: 1fr; margin-inline: 20px; }
+  .life-revelations ol { grid-template-columns: 1fr; }
+  .life-closing-question { margin-inline: 20px; }
+  .life-open-editable { width: calc(100% - 40px); margin: 14px 20px 24px; }
+}
